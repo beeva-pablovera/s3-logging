@@ -1,6 +1,6 @@
 {
   "LoggingEnabled": {
-    "TargetBucket": "genoabbva-dev-s3-logs",
+    "TargetBucket": "s3logs",
     "TargetPrefix": "logs/",
     "TargetGrants": [
       {
