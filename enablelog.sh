@@ -8,6 +8,11 @@
 PROFILE="$1-$2-admin"
 TARGET=""
 
+if [ ! -f logging.json ]; then
+    echo "Logging json file not found! Please download repo again."
+    exit 1
+fi
+
 if [ "$#" -ne 4 ]; then
   echo " "
   echo "###########################################################"
@@ -21,15 +26,17 @@ fi
 
 aws s3 ls --profile $PROFILE | awk '{print $3}' > buckets.txt
 
-#enable write & read-acp permissions to target buckets
+#create target buckets & enable write & read-acp permissions to them
 
 #EU
-#aws s3api create-bucket --profile $PROFILE --bucket $3 --region eu-west-1
+aws s3 --profile $PROFILE mb s3://$3 --region eu-west-1
 aws s3api put-bucket-acl --profile $PROFILE --bucket $3 --grant-write URI=http://acs.amazonaws.com/groups/s3/LogDelivery --grant-read-acp URI=http://acs.amazonaws.com/groups/s3/LogDelivery
 
 #US
-#aws s3api create-bucket --profile $PROFILE --bucket $4 --region us-east-1
+aws s3 --profile $PROFILE mb s3://$4 --region us-east-1
 aws s3api put-bucket-acl --profile $PROFILE --bucket $4 --grant-write URI=http://acs.amazonaws.com/groups/s3/LogDelivery --grant-read-acp URI=http://acs.amazonaws.com/groups/s3/LogDelivery
+
+echo "Buckets made and permissions granted"
 
 while read p; do
 #   set the target bucket in the logging json depending on the location of each bucket
@@ -47,8 +54,8 @@ while read p; do
 #change the prefix of the logs in the bucket with each origin bucket
 jq --arg bucket $TARGET --arg tag "logs/$p" '.LoggingEnabled.TargetPrefix = $tag | .LoggingEnabled.TargetBucket = $bucket' logging.json > this.json
 
-sleep 2
 #and finally applies the configuration to the bucket, we are all done
 aws s3api put-bucket-logging --profile $PROFILE --bucket $p --bucket-logging-status file://this.json
 
+echo "Bucket $p logging enabled"
 done < buckets.txt
