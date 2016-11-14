@@ -1,0 +1,21 @@
+{
+  "LoggingEnabled": {
+    "TargetBucket": "genoabbva-dev-s3-logs",
+    "TargetPrefix": "logs/",
+    "TargetGrants": [
+      {
+        "Grantee": {
+          "Type": "Group",
+          "URI": "http://acs.amazonaws.com/groups/s3/LogDelivery"
+        },
+        "Permission": "WRITE"
+      },      {
+        "Grantee": {
+          "Type": "Group",
+          "URI": "http://acs.amazonaws.com/groups/s3/LogDelivery"
+        },
+        "Permission": "READ_ACP"
+      }
+    ]
+  }
+}
